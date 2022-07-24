@@ -9,3 +9,4 @@ public interface ServiceProvider {
 
     void publishService(RpcServiceConfig rpcServiceConfig);
 }
+

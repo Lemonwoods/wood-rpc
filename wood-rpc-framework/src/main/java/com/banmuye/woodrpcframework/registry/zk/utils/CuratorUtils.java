@@ -1,24 +1,33 @@
 package com.banmuye.woodrpcframework.registry.zk.utils;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.imps.CuratorFrameworkState;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
+import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+
+//todo: 再思考一下此处的缓存逻辑。考虑是否有可以改进的地方。
 
 @Slf4j
 public class CuratorUtils {
     private static CuratorFramework zkClient;
 
     @Value("${zookeeper.address}")
-    private static String DEFAULT_ZOOKEEPER_ADDRESS = "127.0.0.1:2181";
+    public static String ZOOKEEPER_ADDRESS = "127.0.0.1:2181";
 
     @Value("${zookeeper.root_path")
     private static String ZK_REGISTER_ROOT_PATH = "/wood-rpc";
@@ -35,7 +44,47 @@ public class CuratorUtils {
     private CuratorUtils(){}
 
     /**
-     * 创建持久节点
+     * 获取zookeeper客户端对象
+     * @return
+     */
+    public static CuratorFramework getZkClient(){
+        if(zkClient!=null&&zkClient.getState()== CuratorFrameworkState.STARTED){
+            return zkClient;
+        }
+
+        RetryPolicy retryPolicy = new ExponentialBackoffRetry(BASE_SLEEP_TIME, MAX_RETRIES);
+        zkClient = CuratorFrameworkFactory.builder()
+                .connectString(ZOOKEEPER_ADDRESS)
+                .retryPolicy(retryPolicy)
+                .build();
+        zkClient.start();
+        try{
+            if(!zkClient.blockUntilConnected(60, TimeUnit.SECONDS)){
+                throw new RuntimeException("连接到zookeeper服务器失败");
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return zkClient;
+    }
+
+    public static void clearRegistry(CuratorFramework zkClient, InetSocketAddress inetSocketAddress){
+         REGISTERED_PATH_SET.stream().parallel().forEach(path->{
+             try{
+                 if(path.endsWith(inetSocketAddress.toString())){
+                     zkClient.delete().forPath(path);
+                 }
+             } catch (Exception e) {
+                 log.error("删除指定节点失败，失败路径为：[{}]", path);
+             }
+         });
+
+         log.info("目标主机的所有服务信息已经删除， 主机信息为：[{}]", inetSocketAddress.toString());
+         log.info("当前剩余已注册服务包含：[{}]", REGISTERED_PATH_SET.toString());
+    }
+
+    /**
+     * 根据传入的路径信息，创建持久节点
      * @param zkClient
      * @param path
      */
@@ -50,6 +99,7 @@ public class CuratorUtils {
             REGISTERED_PATH_SET.add(path);
         } catch (Exception e) {
             log.error("创建持久节点失败，失败的路径为：[{}]", path);
+            log.error(e.getMessage());
         }
     }
 
@@ -80,13 +130,17 @@ public class CuratorUtils {
         return ZK_REGISTER_ROOT_PATH+"/"+rpcServiceName;
     }
 
+    public static String getZkServicePathWithAddress(String rpcServiceName, InetSocketAddress inetSocketAddress){
+        return getZkServicePath(rpcServiceName)+inetSocketAddress.toString();
+    }
+
     /**
      *
      * @param zkClient
      * @param rpcServiceName
      * @throws Exception
      */
-    public static void registerWatcher(CuratorFramework zkClient, String rpcServiceName) throws Exception {
+    private static void registerWatcher(CuratorFramework zkClient, String rpcServiceName) throws Exception {
         String servicePath = getZkServicePath(rpcServiceName);
         PathChildrenCache pathChildrenCache = new PathChildrenCache(zkClient, servicePath, true);
         PathChildrenCacheListener listener = new PathChildrenCacheListener() {

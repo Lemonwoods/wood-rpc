@@ -1,14 +1,31 @@
 package com.banmuye.woodrpcframework.remoting.dto;
 
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@Builder
+@NoArgsConstructor
 public class RpcMessage {
-    private String requestId;
-
+    /**
+     * rpc message type
+     */
     private byte messageType;
-    private byte serializationType;
-    private byte compressType;
-
+    /**
+     * serialization type
+     */
+    private byte codec;
+    /**
+     * compress type
+     */
+    private byte compress;
+    /**
+     * request id
+     */
+    private int requestId;
+    /**
+     * request data
+     */
     private Object data;
 }
