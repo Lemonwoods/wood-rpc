@@ -76,6 +76,11 @@ public class ExtensionLoader <T>{
         return (T) instance;
     }
 
+    /**
+     * 根据name来获取该接口的指定实现类的实例，如果没有缓存的实例则根据类信息实例化，然后添加缓存
+     * @param name
+     * @return
+     */
     private T createExtension(String name) {
         Class<?> clazz = getExtensionClasses().get(name);
         if(clazz==null){
@@ -94,6 +99,10 @@ public class ExtensionLoader <T>{
         return instance;
     }
 
+    /**
+     * 获取目标接口的配置文件的kv键值对，如果为空，则根据配置文件加载
+     * @return
+     */
     private Map<String, Class<?>> getExtensionClasses() {
         Map<String, Class<?>> classes = cachedClasses.get();
         if(classes == null){
@@ -109,6 +118,10 @@ public class ExtensionLoader <T>{
         return classes;
     }
 
+    /**
+     * 加载目标类的配置文件的kv键值对
+     * @param extensionClasses
+     */
     private void loadDirectory(Map<String, Class<?>> extensionClasses) {
         String fileName = ExtensionLoader.SERVICE_DIRECTORY+type.getName();
         try{
@@ -127,6 +140,11 @@ public class ExtensionLoader <T>{
         }
     }
 
+    /**
+     * @param extensionClasses 代表了一个文件中所有的kv键值对，此时v代表的类已经成功加载
+     * @param classLoader
+     * @param resourceUrl
+     */
     private void loadResource(Map<String, Class<?>> extensionClasses, ClassLoader classLoader, URL resourceUrl) {
         try(BufferedReader reader = new BufferedReader(new InputStreamReader(resourceUrl.openStream(), StandardCharsets.UTF_8))){
             String line;
