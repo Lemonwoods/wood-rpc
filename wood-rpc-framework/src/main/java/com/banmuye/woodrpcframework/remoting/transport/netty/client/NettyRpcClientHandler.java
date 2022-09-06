@@ -2,7 +2,6 @@ package com.banmuye.woodrpcframework.remoting.transport.netty.client;
 
 import com.banmuye.woodrpccommon.enums.CompressTypeEnum;
 import com.banmuye.woodrpccommon.enums.SerializationTypeEnum;
-import com.banmuye.woodrpccommon.factory.SingletonFactory;
 import com.banmuye.woodrpcframework.remoting.constants.RpcConstants;
 import com.banmuye.woodrpcframework.remoting.dto.RpcMessage;
 import com.banmuye.woodrpcframework.remoting.dto.RpcResponse;
@@ -14,17 +13,20 @@ import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.ReferenceCountUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.net.InetSocketAddress;
 
 @Slf4j
+@Component
 public class NettyRpcClientHandler extends ChannelInboundHandlerAdapter {
-    private final UnprocessedRequests unprocessedRequests;
-    private final NettyRpcClient nettyRpcClient;
+    @Autowired
+    private UnprocessedRequests unprocessedRequests;
+    @Autowired
+    private NettyRpcClient nettyRpcClient;
 
     public NettyRpcClientHandler(){
-        this.unprocessedRequests = SingletonFactory.getInstance(UnprocessedRequests.class);
-        this.nettyRpcClient = SingletonFactory.getInstance(NettyRpcClient.class);
     }
 
     @Override
@@ -36,7 +38,7 @@ public class NettyRpcClientHandler extends ChannelInboundHandlerAdapter {
                 byte messageType = tmp.getMessageType();
                 if(messageType == RpcConstants.HEARTBEAT_RESPONSE_TYPE){
                     log.info("heart beat response type: [{}]", tmp.getData());
-                }else if(messageType == RpcConstants.REQUEST_TYPE){
+                }else if(messageType == RpcConstants.RESPONSE_TYPE){
                     RpcResponse<Object> rpcResponse = (RpcResponse<Object>) tmp.getData();
                     unprocessedRequests.complete(rpcResponse);
                 }

@@ -22,7 +22,7 @@ class WoodRpcFrameworkApplicationTests {
 
     @Test
     void contextLoads() {
-        RpcRequest rpcRequest = new RpcRequest();
+        RpcRequest rpcRequest = RpcRequest.builder().build();
         rpcRequest.setInterfaceName("com.helloService");
         rpcRequest.setGroup("test");
         rpcRequest.setVersion("v1.0");

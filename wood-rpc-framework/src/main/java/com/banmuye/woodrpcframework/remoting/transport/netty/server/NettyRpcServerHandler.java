@@ -3,28 +3,36 @@ package com.banmuye.woodrpcframework.remoting.transport.netty.server;
 import com.banmuye.woodrpccommon.enums.CompressTypeEnum;
 import com.banmuye.woodrpccommon.enums.RpcResponseCodeEnum;
 import com.banmuye.woodrpccommon.enums.SerializationTypeEnum;
-import com.banmuye.woodrpccommon.factory.SingletonFactory;
 import com.banmuye.woodrpcframework.remoting.constants.RpcConstants;
 import com.banmuye.woodrpcframework.remoting.dto.RpcMessage;
 import com.banmuye.woodrpcframework.remoting.dto.RpcRequest;
 import com.banmuye.woodrpcframework.remoting.dto.RpcResponse;
 import com.banmuye.woodrpcframework.remoting.handler.RpcRequestHandler;
 import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.ReferenceCountUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
 
 @Slf4j
 @Component
+@Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+@ChannelHandler.Sharable
 public class NettyRpcServerHandler extends ChannelInboundHandlerAdapter {
-    private final RpcRequestHandler rpcRequestHandler;
+
+    @Autowired
+    private RpcRequestHandler rpcRequestHandler;
 
     public NettyRpcServerHandler(){
-        this.rpcRequestHandler = SingletonFactory.getInstance(RpcRequestHandler.class);
     }
 
     @Override
@@ -33,7 +41,7 @@ public class NettyRpcServerHandler extends ChannelInboundHandlerAdapter {
             if(msg instanceof RpcMessage){
                 log.info("Netty server received msg: [{}]", msg);
                 byte messageType = ((RpcMessage) msg).getMessageType();
-                RpcMessage rpcMessage = new RpcMessage();
+                RpcMessage rpcMessage = RpcMessage.builder().build();
                 rpcMessage.setCodec(SerializationTypeEnum.HESSIAN.getCode());
                 rpcMessage.setCompress(CompressTypeEnum.GZIP.getCode());
                 if(messageType == RpcConstants.HEARTBEAT_REQUEST_TYPE){

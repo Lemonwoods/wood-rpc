@@ -1,20 +1,24 @@
 package com.banmuye.woodrpcframework.remoting.handler;
 
 import com.banmuye.woodrpccommon.exception.RpcException;
-import com.banmuye.woodrpccommon.factory.SingletonFactory;
 import com.banmuye.woodrpcframework.provider.ServiceProvider;
 import com.banmuye.woodrpcframework.remoting.dto.RpcRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 @Slf4j
+@Component
 public class RpcRequestHandler {
-    private final ServiceProvider serviceProvider;
+
+    @Autowired
+    private ServiceProvider serviceProvider;
 
     public RpcRequestHandler(){
-        this.serviceProvider = SingletonFactory.getInstance(ServiceProvider.class);
+
     }
 
     public Object handle(RpcRequest rpcRequest){

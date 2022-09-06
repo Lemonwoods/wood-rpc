@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@NoArgsConstructor
 public class RpcMessage {
     /**
      * rpc message type

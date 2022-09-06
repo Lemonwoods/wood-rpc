@@ -1,5 +1,6 @@
 package com.banmuye.woodrpcframework.compress.gzip;
 
+import com.banmuye.woodrpccommon.extension.SPI;
 import com.banmuye.woodrpcframework.compress.Compress;
 
 import java.io.ByteArrayInputStream;

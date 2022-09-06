@@ -2,12 +2,14 @@ package com.banmuye.woodrpcframework.remoting.transport.netty.client;
 
 import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
+@Component
 public class ChannelProvider {
     private final Map<String, Channel> channelMap;
 

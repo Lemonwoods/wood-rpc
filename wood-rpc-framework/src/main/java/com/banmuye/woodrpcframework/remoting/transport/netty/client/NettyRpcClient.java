@@ -22,6 +22,9 @@ import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.units.qual.A;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
@@ -30,8 +33,12 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class NettyRpcClient implements RpcRequestTransport {
     private final ServiceDiscovery serviceDiscovery;
-    private final UnprocessedRequests unprocessedRequests;
-    private final ChannelProvider channelProvider;
+    @Autowired
+    private UnprocessedRequests unprocessedRequests ;
+    @Autowired
+    private ChannelProvider channelProvider;
+    @Autowired
+    private NettyRpcClientHandler nettyRpcClientHandler;
     private final Bootstrap bootstrap;
     private final EventLoopGroup eventLoopGroup;
 
@@ -49,12 +56,10 @@ public class NettyRpcClient implements RpcRequestTransport {
                         p.addLast(new IdleStateHandler(0, 5, 0, TimeUnit.SECONDS));
                         p.addLast(new RpcMessageEncoder());
                         p.addLast(new RpcMessageDecoder());
-                        p.addLast(new NettyRpcClientHandler());
+                        p.addLast(nettyRpcClientHandler);
                     }
                 });
         this.serviceDiscovery = ExtensionLoader.getExtensionLoader(ServiceDiscovery.class).getExtension("zookeeper");
-        this.unprocessedRequests = SingletonFactory.getInstance(UnprocessedRequests.class);
-        this.channelProvider = SingletonFactory.getInstance(ChannelProvider.class);
     }
 
     @SneakyThrows

@@ -31,7 +31,7 @@ public class RpcClientProxy implements InvocationHandler {
 
     public RpcClientProxy(RpcRequestTransport rpcRequestTransport){
         this.rpcRequestTransport = rpcRequestTransport;
-        this.rpcServiceConfig = new RpcServiceConfig();
+        this.rpcServiceConfig = RpcServiceConfig.builder().build();
     }
 
     public <T> T getProxy(Class<T> clazz){
@@ -44,6 +44,7 @@ public class RpcClientProxy implements InvocationHandler {
         RpcRequest rpcRequest = RpcRequest.builder()
                 .parameters(args)
                 .interfaceName(method.getDeclaringClass().getName())
+                .methodName(method.getName())
                 .parameterTypes(method.getParameterTypes())
                 .requestId(UUID.randomUUID().toString())
                 .group(rpcServiceConfig.getGroup())

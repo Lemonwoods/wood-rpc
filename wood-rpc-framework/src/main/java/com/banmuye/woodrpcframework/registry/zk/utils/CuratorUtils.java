@@ -130,12 +130,18 @@ public class CuratorUtils {
         return ZK_REGISTER_ROOT_PATH+"/"+rpcServiceName;
     }
 
+    /**
+     * 获取服务对应的Zookeeper的Path：根Path+rpcServiceName+IP:Port
+     * @param rpcServiceName
+     * @param inetSocketAddress
+     * @return
+     */
     public static String getZkServicePathWithAddress(String rpcServiceName, InetSocketAddress inetSocketAddress){
         return getZkServicePath(rpcServiceName)+inetSocketAddress.toString();
     }
 
     /**
-     *
+     *监听指定Path节点,当这个节点下增加子节点(即同种接口新增了节点)的时候,会获取这个接口的所有通讯地址列表,缓存到本地
      * @param zkClient
      * @param rpcServiceName
      * @throws Exception

@@ -1,6 +1,5 @@
 package com.banmuye.woodrpcframework.remoting.transport.netty.server;
 
-import com.banmuye.woodrpccommon.factory.SingletonFactory;
 import com.banmuye.woodrpccommon.utils.RuntimeUtil;
 import com.banmuye.woodrpccommon.utils.concurrent.threadpool.ThreadPoolFactoryUtil;
 import com.banmuye.woodrpcframework.config.CustomShutdownHook;
@@ -21,6 +20,8 @@ import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 
 import java.net.InetAddress;
@@ -28,10 +29,15 @@ import java.net.Socket;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
+@Service
 public class NettyRpcServer {
     public static final int PORT = 9998;
 
-    private final ServiceProvider serviceProvider = SingletonFactory.getInstance(ZkServiceProviderImpl.class);
+    @Autowired
+    private ServiceProvider serviceProvider;
+
+    @Autowired
+    private NettyRpcServerHandler nettyRpcServerHandler;
 
     public void registerService(RpcServiceConfig rpcServiceConfig){
         serviceProvider.publishService(rpcServiceConfig);
@@ -60,7 +66,7 @@ public class NettyRpcServer {
                             p.addLast(new IdleStateHandler(30,0,0, TimeUnit.SECONDS));
                             p.addLast(new RpcMessageEncoder());
                             p.addLast(new RpcMessageDecoder());
-                            p.addLast(serviceHandlerGroup, new NettyRpcServerHandler());
+                            p.addLast(serviceHandlerGroup, nettyRpcServerHandler);
                         }
                     });
             // 绑定端口,同步等待绑定成功

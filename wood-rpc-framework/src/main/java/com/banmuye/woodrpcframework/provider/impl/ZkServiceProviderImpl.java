@@ -8,6 +8,8 @@ import com.banmuye.woodrpcframework.provider.ServiceProvider;
 import com.banmuye.woodrpcframework.registry.ServiceRegistry;
 import com.banmuye.woodrpcframework.remoting.transport.netty.server.NettyRpcServer;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -22,12 +24,12 @@ public class ZkServiceProviderImpl implements ServiceProvider {
 
     private final Map<String, Object> serviceMap;
     private final Set<String> registeredService;
-    private final ServiceRegistry serviceRegistry;
+    @Autowired
+    private ServiceRegistry serviceRegistry;
 
-    ZkServiceProviderImpl(){
+    public ZkServiceProviderImpl(){
         this.serviceMap = new ConcurrentHashMap<>();
         this.registeredService = ConcurrentHashMap.newKeySet();
-        this.serviceRegistry = ExtensionLoader.getExtensionLoader(ServiceRegistry.class).getExtension("zookeeper");
     }
 
     @Override

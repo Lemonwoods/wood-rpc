@@ -9,6 +9,7 @@ import com.banmuye.woodrpcframework.proxy.RpcClientProxy;
 import com.banmuye.woodrpcframework.remoting.transport.RpcRequestTransport;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.stereotype.Component;
 
@@ -18,13 +19,14 @@ import java.util.Arrays;
 @Slf4j
 @Component
 public class SpringBeanPostProcessor implements BeanPostProcessor {
-    private final ServiceProvider serviceProvider;
 
-    private final RpcRequestTransport rpcClient;
+    @Autowired
+    private ServiceProvider serviceProvider;
+
+    @Autowired
+    private RpcRequestTransport rpcClient;
 
     public SpringBeanPostProcessor(){
-        this.serviceProvider = ExtensionLoader.getExtensionLoader(ServiceProvider.class).getExtension("zookeeper");
-        this.rpcClient = ExtensionLoader.getExtensionLoader(RpcRequestTransport.class).getExtension("netty");
     }
 
     @Override
